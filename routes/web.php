@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Models\PauliChessGame;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,4 +16,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+
+Route::model('PauliChessGame', PauliChessGame::class);
+
+Route::prefix('paulichess')->group(function() {
+    Route::get('games', 'PauliChessGameController@index')
+        ->name('paulichess.games.index');
+
+    Route::get('games/{PauliChessGame}', 'PauliChessGameController@show')
+        ->name('paulichess.games.show');
 });

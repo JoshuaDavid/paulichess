@@ -18,11 +18,15 @@ class CreatePauliChessGamePlayersTable extends Migration
             $table->bigInteger('pauli_chess_game_id')->unsigned();
             $table->foreign('pauli_chess_game_id', 'game_id')
                 ->references('id')
-                ->on('pauli_chess_games');
-            $table->bigInteger('user_id')->unsigned();
+                ->on('pauli_chess_games')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
+            $table->bigInteger('user_id')->unsigned()->nullable();
             $table->foreign('user_id', 'user_id')
                 ->references('id')
-                ->on('users');
+                ->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('set null');
             $table->string('color');
             $table->timestamps();
         });

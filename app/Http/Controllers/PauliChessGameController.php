@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\PauliChessGame;
+use App\Models\PauliChessGame;
 use Illuminate\Http\Request;
 
 class PauliChessGameController extends Controller
@@ -14,7 +14,12 @@ class PauliChessGameController extends Controller
      */
     public function index()
     {
-        //
+        $games = PauliChessGame::query()
+            ->paginate();
+
+        return response()->view('paulichess.games.index', [
+            'games' => $games,
+        ]);
     }
 
     /**
@@ -44,9 +49,17 @@ class PauliChessGameController extends Controller
      * @param  \App\PauliChessGame  $pauliChessGame
      * @return \Illuminate\Http\Response
      */
-    public function show(PauliChessGame $pauliChessGame)
+    public function show(PauliChessGame $game)
     {
-        //
+        $game->load(['players', 'pieces']);
+        $board = array_fill(1, 8, array_fill(1, 8, []));
+        foreach ($game->pieces as $piece) {
+            $board[$piece->y][$piece->x][] = $piece;
+        }
+        return response()->view('paulichess.games.show', [
+            'game' => $game,
+            'board' => $board,
+        ]);
     }
 
     /**

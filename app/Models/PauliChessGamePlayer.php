@@ -12,6 +12,18 @@ class PauliChessGamePlayer extends Model
     }
 
     public function user() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function pieces() {
+        return $this->hasMany(PauliChessGamePiece::class, 'pauli_chess_game_player_id');
+    }
+
+    public function getLegalMoves() {
+        $moves = [];
+        foreach ($this->pieces as $piece) {
+            $moves = array_merge($moves, $piece->getLegalMoves());
+        }
+        return $moves;
     }
 }
