@@ -30,4 +30,5 @@ Route::prefix('paulichess')
             ->name('paulichess.games.show');
     });
 
+Route::mixin(new \Laravel\Ui\AuthRouteMethods());
 Auth::routes();
