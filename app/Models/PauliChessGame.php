@@ -71,8 +71,26 @@ class PauliChessGame extends Model
                 $piece->save();
             }
         }
-        $game->turn = 'white';
-        $game->save();
+    }
+
+    public function isUserPlaying($user) {
+        foreach ($this->players as $player) {
+            if ($player->user and $player->user->id == $user->id) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function isTurnOfUser($user) {
+        foreach ($this->players as $player) {
+            if ($player->user and $player->user->id == $user->id) {
+                if ($player->color == $this->turn) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public function getPieces($filter) {

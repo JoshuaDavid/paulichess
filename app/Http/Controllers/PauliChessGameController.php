@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\PauliChessGame;
+use App\Models\PauliChessGamePlayer;
 use Illuminate\Http\Request;
+use Auth;
 
 class PauliChessGameController extends Controller
 {
@@ -40,7 +42,18 @@ class PauliChessGameController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth::user();
+        $game = new PauliChessGame();
+        $game->turn = 'white';
+        $game->save();
+
+        $player = new PauliChessGamePlayer();
+        $player->game()->associate($game);
+        $player->user()->associate($user);
+        $player->color = 'shuffle';
+        $player->save();
+
+        return redirect()->route('paulichess.games.index');
     }
 
     /**
@@ -60,6 +73,30 @@ class PauliChessGameController extends Controller
             'game' => $game,
             'board' => $board,
         ]);
+    }
+
+    public function joinGame(PauliChessGame $game) {
+        $user = Auth::user();
+
+        $player = new PauliChessGamePlayer();
+        $player->game()->associate($game);
+        $player->user()->associate($user);
+        $player->color = 'shuffle';
+        $player->save();
+
+        if (rand(0, 1) == 0) {
+            $colors = ['white', 'black'];
+        } else {
+            $colors = ['black', 'white'];
+        }
+
+        $game->players[0]->color = $colors[0];
+        $game->players[1]->color = $colors[1];
+
+        $game->save();
+        $game->init();
+
+        return redirect()->route('paulichess.games.show', [$game->id]);
     }
 
     /**

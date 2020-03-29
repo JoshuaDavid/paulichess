@@ -15,7 +15,11 @@ use App\Models\PauliChessGame;
 */
 
 Route::get('/', function () {
-    return redirect()->route('paulichess.games.index');
+    if (Auth::user()) {
+        return redirect()->route('paulichess.games.index');
+    } else {
+        return redirect()->route('login');
+    }
 });
 
 Route::model('PauliChessGame', PauliChessGame::class);
@@ -28,6 +32,12 @@ Route::prefix('paulichess')
 
         Route::get('games/{PauliChessGame}', 'PauliChessGameController@show')
             ->name('paulichess.games.show');
+
+        Route::post('games', 'PauliChessGameController@store')
+            ->name('paulichess.games.store');
+
+        Route::post('games/{PauliChessGame}/join', 'PauliChessGameController@joinGame')
+            ->name('paulichess.games.join');
     });
 
 Route::mixin(new \Laravel\Ui\AuthRouteMethods());

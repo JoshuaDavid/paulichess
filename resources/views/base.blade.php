@@ -6,12 +6,25 @@
         <link rel="stylesheet" href="/css/app.css">
         <script src="/js/app.js"></script>
         <style>
-            td.white-square {
+            .chessboard td.white-square {
                 background: #eeeeee;
             }
 
-            td.black-square {
+            .chessboard td.black-square {
                 background: #aaaaaa;
+            }
+
+            .chessboard td {
+                height: 3em;
+                width:  3em;
+                text-align: center;
+            }
+
+            .chessboard .slot {
+                height: 2em;
+                width: 1em;
+                box-shadow: 0px 0px 1px 1px gray;
+                display: inline-block;
             }
         </style>
     </head>
@@ -25,10 +38,7 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="nav navbar-nav mr-auto">
                     <li class="nav-item active">
-                        <a class="nav-link" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
+                        <a class="nav-link" href="{{ route('paulichess.games.index') }}">All Games</a>
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
@@ -39,10 +49,10 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <li class="dropdown-item">
-                                <a href="#">Action</a>
+                                <a href="/paulichess/my-active-games">My Active Games</a>
                             </li>
                             <li class="dropdown-item">
-                                <a href="#">Other</a>
+                                <a href="/paulichess/my-active-games">My Past Games</a>
                             </li>
                             <li role="separator" class="divider"></li>
                             <li class="dropdown-item">

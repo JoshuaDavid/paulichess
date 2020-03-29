@@ -19,6 +19,7 @@ class PauliChessGameSeeder extends Seeder
         $bob = User::where('name', 'bob')->first();
 
         $game = new PauliChessGame();
+        $game->turn = 'white';
         $game->save();
 
         $alicePlayer = new PauliChessGamePlayer();
