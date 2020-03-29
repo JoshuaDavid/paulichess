@@ -14,6 +14,10 @@ class PauliChessGame extends Model
         return $this->hasMany(PauliChessGamePiece::class, 'pauli_chess_game_id');
     }
 
+    public function moves() {
+        return $this->hasMany(PauliChessGameMove::class, 'pauli_chess_game_id');
+    }
+
     public function getWhitePlayer() {
         foreach ($this->players as $player) {
             if ($player->color == 'white') {

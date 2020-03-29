@@ -39,6 +39,31 @@
 <div>
 @if ($game->winner)
 <h1>Game over! Winner is {{ $game->winner }}</h1>
+<h2>Moves:</h2>
+<ol>
+    @foreach ($game->moves as $move)
+    <li>
+        {{ $move->player->name }}
+        ({{ $move->player->color }})
+        moved
+        <b>({{ $move->movedPiece->type }})</b>
+        from
+        <b>{{ " abcdefgh"[$move->from_x] . $move->from_y }}</b>
+        to
+        <b>{{ " abcdefgh"[$move->from_x] . $move->from_y }}</b>
+        @if ($move->capturedPiece)
+        <span>capturing the</span>
+        <b>{{ $move->capturedPiece->type }}</b>
+        @else
+        <span>making no captures</span>
+        @endif
+        @if ($move->promotion_type)
+        <span>and promote to</span>
+        <b>{{ $move->promotion_type }}</b>
+        @endif
+    </li>
+    @endforeach
+</ol>
 @else
 It is {{ $game->turn }}'s turn.
 @if ($game->isUserPlaying(\Auth::user()))
