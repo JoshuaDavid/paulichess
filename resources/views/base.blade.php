@@ -84,6 +84,19 @@
         <div class="container">
             @section('content')
             @show
+            <div class="alert alert-warning">
+                <p>This is an unfinished game. Known limitations include, but are not limited to the following:</p>
+                <ul>
+                    <li>Pawns cannot capture en-passant.</li>
+                    <li>You cannot castle.</li>
+                    <li>There is no warning that you are in check.</li>
+                    <li>Likewise, nothing stops you from moving into check.</li>
+                    <li>The game ends when a king is captured. Stalemate is not a thing.</li>
+                    <li>The "if you make the same series of moves 3 times it's stalemate" rule does not apply.</li>
+                </ul>
+                <p>If you run across a bug, you can file a bug report <a href="https://github.com/JoshuaDavid/paulichess/issues/new">here</a>.</p>
+                <p>If you would like to contribute, or just want to see how this was made, <a href="">check the project out on GitHub</a>.</p>
+            </div>
         </div>
     </body>
 </html>
