@@ -15,10 +15,14 @@ class CreatePauliChessGamePlayersTable extends Migration
     {
         Schema::create('pauli_chess_game_players', function (Blueprint $table) {
             $table->id();
-            $table->integer('pauli_chess_game_id')->unsigned();
-            $table->foreign('pauli_chess_game_id')
+            $table->bigInteger('pauli_chess_game_id')->unsigned();
+            $table->foreign('pauli_chess_game_id', 'game_id')
                 ->references('id')
-                ->on('pauli_chess_game');
+                ->on('pauli_chess_games');
+            $table->bigInteger('user_id')->unsigned();
+            $table->foreign('user_id', 'user_id')
+                ->references('id')
+                ->on('users');
             $table->string('color');
             $table->timestamps();
         });
