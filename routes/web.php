@@ -15,15 +15,19 @@ use App\Models\PauliChessGame;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('paulichess.games.index');
 });
 
 Route::model('PauliChessGame', PauliChessGame::class);
 
-Route::prefix('paulichess')->group(function() {
-    Route::get('games', 'PauliChessGameController@index')
-        ->name('paulichess.games.index');
+Route::prefix('paulichess')
+    ->middleware('auth')
+    ->group(function() {
+        Route::get('games', 'PauliChessGameController@index')
+            ->name('paulichess.games.index');
 
-    Route::get('games/{PauliChessGame}', 'PauliChessGameController@show')
-        ->name('paulichess.games.show');
-});
+        Route::get('games/{PauliChessGame}', 'PauliChessGameController@show')
+            ->name('paulichess.games.show');
+    });
+
+Auth::routes();

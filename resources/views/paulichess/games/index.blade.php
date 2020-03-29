@@ -1,7 +1,8 @@
 @extends('base')
 
 @section('content')
-<table style="width: 100%">
+<h1>Games</h1>
+<table class="table table-bordered table-hover">
     <thead>
         <tr>
             <th>ID</th>
@@ -33,5 +34,9 @@
     </tr>
 @endforeach
 </table>
+<form method="post" action="">
+    <button class="btn btn-primary" type="submit">Start a new game</button>
+</form>
+{!! $games->links() !!}
 @endsection
 
