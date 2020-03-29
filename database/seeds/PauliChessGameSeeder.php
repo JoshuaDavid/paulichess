@@ -33,6 +33,6 @@ class PauliChessGameSeeder extends Seeder
         $bobPlayer->color = 'black';
         $bobPlayer->save();
 
-        $game->initPieces();
+        $game->init();
     }
 }

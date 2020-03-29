@@ -15,6 +15,7 @@ class CreatePauliChessGamesTable extends Migration
     {
         Schema::create('pauli_chess_games', function (Blueprint $table) {
             $table->id();
+            $table->string('turn');
             $table->timestamps();
         });
     }

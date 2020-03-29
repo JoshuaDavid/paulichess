@@ -30,7 +30,7 @@ class PauliChessGame extends Model
         }
     }
 
-    public function initPieces() {
+    public function init() {
         $whitePlayer = $this->getWhitePlayer();
         $blackPlayer = $this->getBlackPlayer();
         $layout = [
@@ -71,6 +71,8 @@ class PauliChessGame extends Model
                 $piece->save();
             }
         }
+        $game->turn = 'white';
+        $game->save();
     }
 
     public function getPieces($filter) {
