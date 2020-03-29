@@ -25,6 +25,9 @@
             @endif
             </div>
             @endforeach
+            @if ($game->winner)
+            <b>Winner: {{$game->winner}}</b>
+            @endif
         </td>
         <td>
             <a href="{{ route('paulichess.games.show', [$game->id]) }}">View Game</a>

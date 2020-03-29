@@ -79,15 +79,18 @@ class PauliChessGamePiece extends Model
         $move->game()->associate($this->game);
         $move->player()->associate($this->player);
         $move->movedPiece()->associate($this);
-        $move->fromX = $this->x;
-        $move->fromY = $this->y;
-        $move->toX = $toX;
-        $move->toY = $toY;
+        $move->from_x = $this->x;
+        $move->from_y = $this->y;
+        $move->to_x = $toX;
+        $move->to_y = $toY;
         if ($pieceToCapture) {
             $move->capturedPiece()->associate($pieceToCapture);
             $move->type = 'capture';
         } else {
             $move->type = 'move';
+        }
+        if ($promotionType) {
+            $move->promotion_type = $promotionType;
         }
         return $move;
     }
@@ -115,7 +118,7 @@ class PauliChessGamePiece extends Model
             if ($this->y == 7) {
                 if ($this->game->isEmptySquare($this->x, $this->y - 1)
                     && $this->game->hasEmptySlot($this->x, $this->y - 2)) {
-                    $moves[] = $this->constructMove($this->x, $this->y - 1, null, null);
+                    $moves[] = $this->constructMove($this->x, $this->y - 2, null, null);
                 }
             }
         } else if ($this->y == 2) {
@@ -170,7 +173,7 @@ class PauliChessGamePiece extends Model
             if ($this->y == 2) {
                 if ($this->game->isEmptySquare($this->x, $this->y + 1)
                     && $this->game->hasEmptySlot($this->x, $this->y + 2)) {
-                    $moves[] = $this->constructMove($this->x, $this->y + 1, null, null);
+                    $moves[] = $this->constructMove($this->x, $this->y + 2, null, null);
                 }
             }
         } else if ($this->y == 7) {
@@ -203,7 +206,7 @@ class PauliChessGamePiece extends Model
         });
 
         foreach ($capturablePieces as $capture) {
-            if ($capture->y != 1) {
+            if ($capture->y != 8) {
                 $moves[] = $this->constructMove($capture->x, $capture->y, $capture, null);
             } else {
                 foreach ($this->getPawnPromotionOptions() as $type) {
@@ -237,7 +240,7 @@ class PauliChessGamePiece extends Model
                 $moves[] = $this->constructMove($capture->x, $capture->y, $capture, null);
             }
             
-            if (!$this->game->isEmptySquare($x, $x)) {
+            if (!$this->game->isEmptySquare($x, $y)) {
                 break;
             }
         }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Obj;
 
 class PauliChessGameMove extends Model
 {
@@ -20,5 +21,17 @@ class PauliChessGameMove extends Model
 
     public function capturedPiece() {
         return $this->belongsTo(PauliChessGamePiece::class, 'captured_piece_id');
+    }
+
+    public function getSearchKey() {
+        return implode('-', [
+            $this->movedPiece->id,
+            $this->from_x,
+            $this->from_y,
+            data_get($this, 'capturedPiece.id', ''),
+            $this->to_x,
+            $this->to_y,
+            data_get($this, 'promotion_type', ''),
+        ]);
     }
 }

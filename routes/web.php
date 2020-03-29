@@ -38,6 +38,9 @@ Route::prefix('paulichess')
 
         Route::post('games/{PauliChessGame}/join', 'PauliChessGameController@joinGame')
             ->name('paulichess.games.join');
+
+        Route::post('games/{PauliChessGame}/move', 'PauliChessGameController@move')
+            ->name('paulichess.games.move');
     });
 
 Route::mixin(new \Laravel\Ui\AuthRouteMethods());

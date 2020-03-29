@@ -64,14 +64,26 @@ class PauliChessGameController extends Controller
      */
     public function show(PauliChessGame $game)
     {
+        $user = Auth::user();
+
         $game->load(['players', 'pieces']);
         $board = array_fill(1, 8, array_fill(1, 8, []));
         foreach ($game->pieces as $piece) {
-            $board[$piece->y][$piece->x][] = $piece;
+            if (!$piece->is_captured) {
+                $board[$piece->y][$piece->x][] = $piece;
+            }
         }
+
+        $legalMoves = [];
+        if ($game->isTurnOfUser($user)) {
+            $player = $game->getActivePlayer();
+            $legalMoves = $player->getLegalMoves();
+        }
+
         return response()->view('paulichess.games.show', [
             'game' => $game,
             'board' => $board,
+            'legalMoves' => $legalMoves,
         ]);
     }
 
@@ -84,17 +96,26 @@ class PauliChessGameController extends Controller
         $player->color = 'shuffle';
         $player->save();
 
-        if (rand(0, 1) == 0) {
-            $colors = ['white', 'black'];
-        } else {
-            $colors = ['black', 'white'];
-        }
-
-        $game->players[0]->color = $colors[0];
-        $game->players[1]->color = $colors[1];
-
         $game->save();
         $game->init();
+
+        return redirect()->route('paulichess.games.show', [$game->id]);
+    }
+
+    public function move(Request $request, PauliChessGame $game) {
+        $user = Auth::user();
+        if (!$game->isTurnOfUser($user)) {
+            throw new Exception("It is not your turn");
+        }
+
+        $player = $game->getActivePlayer();
+        $moves = $player->getLegalMoves();
+        foreach ($moves as $move) {
+            if ($request->input('move') == $move->getSearchKey()) {
+                $game->executeMove($move);
+                break;
+            }
+        }
 
         return redirect()->route('paulichess.games.show', [$game->id]);
     }

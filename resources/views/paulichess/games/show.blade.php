@@ -23,9 +23,12 @@
                 @foreach($board[$y][$x] as $piece)
                 <div class="slot">{{ $piece->getSymbol() }}</div>
                 @endforeach
-                @foreach(range(count($board[$y][$x]), 1) as $i)
+                @if (count($board[$y][$x]) < 1)
                 <div class="slot">&nbsp;</div>
-                @endforeach
+                @endif
+                @if (count($board[$y][$x]) < 2)
+                <div class="slot">&nbsp;</div>
+                @endif
             </td>
             @endforeach
         </tr>
@@ -34,14 +37,51 @@
 </table>
 
 <div>
+@if ($game->winner)
+<h1>Game over! Winner is {{ $game->winner }}</h1>
+@else
+It is {{ $game->turn }}'s turn.
 @if ($game->isUserPlaying(\Auth::user()))
     @if ($game->isTurnOfUser(\Auth::user()))
-        <h2>It is your turn!</h2>
+        <h2>It is your turn to move as {{ $game->turn }}</h2>
+        <b>Your legal moves are as follows:</b>
+        <form method="post" action="{{ route('paulichess.games.move', [$game->id]) }}">
+            @csrf
+            <div>
+                @foreach($legalMoves as $move)
+                <div>
+                    <input type="radio" id="move-{{$move->getSearchKey()}}" name="move" value="{{$move->getSearchKey()}}" />
+                    <label for="move-{{$move->getSearchKey()}}">
+                        <span>Move</span>
+                        <b>{{ $move->movedPiece->type }}</b>
+                        <span>from</span>
+                        <b>{{ " abcdefgh"[$move->from_x] . $move->from_y }}</b>
+                        <span>to</span>
+                        <b>{{ " abcdefgh"[$move->to_x] . $move->to_y }}</b>
+                        @if ($move->capturedPiece)
+                        <span>capturing the</span>
+                        <b>{{ $move->capturedPiece->type }}</b>
+                        @else
+                        <span>making no captures</span>
+                        @endif
+                        @if ($move->promotion_type)
+                        <span>and promote to</span>
+                        <b>{{ $move->promotion_type }}</b>
+                        @endif
+                    </label>
+                </div>
+                @endforeach
+            </div>
+            <div>
+                <button class="btn btn-primary">Move</button>
+            </div>
+        </form>
     @else
         <div class="alert alert-info">Waiting on other player</div>
     @endif
 @else
     <div class="alert alert-info">You are observing this game.</div>
+@endif
 @endif
 </div>
 @endsection
