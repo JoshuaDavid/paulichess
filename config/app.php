@@ -188,7 +188,7 @@ return [
     |
     */
 
-    'aliases' => [
+    'aliases' => array_merge([
 
         'App' => Illuminate\Support\Facades\App::class,
         'Arr' => Illuminate\Support\Arr::class,
@@ -227,6 +227,17 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
-    ],
+    ], (function () {
+        // Drop everything in App\Models into the root namespace for tinker
+        $aliases = [];
+        foreach (scandir(app_path() . '/Models') as $f) {
+            if ($f == '.' || $f == '..') {
+                continue;
+            }
+            $className = substr($f, 0, -4);
+            $aliases[$className] = 'App\\Models\\' . $className;
+        }
+        return $aliases;
+    })()),
 
 ];
