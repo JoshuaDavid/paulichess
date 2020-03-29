@@ -30,7 +30,7 @@
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">Navbar</a>
+            <a class="navbar-brand" href="#">Pauli Chess</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -86,6 +86,7 @@
             @show
             <div class="alert alert-warning">
                 <p>This is an unfinished game. Known limitations include, but are not limited to the following:</p>
+                <p>This game was inspired by <a href="https://blog.plover.com/games/double-chess.html">this blog post</a></p>
                 <ul>
                     <li>Pawns cannot capture en-passant.</li>
                     <li>You cannot castle.</li>
