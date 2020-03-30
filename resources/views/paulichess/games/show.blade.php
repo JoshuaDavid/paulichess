@@ -20,14 +20,72 @@
             <th>{{ $y }}</th>
             @foreach(range(1, 8) as $x)
             <td class="{{ ($x + $y) % 2 == 0 ? 'white' : 'black' }}-square">
-                @foreach($board[$y][$x] as $piece)
-                <div class="slot">{{ $piece->getSymbol() }}</div>
-                @endforeach
-                @if (count($board[$y][$x]) < 1)
-                <div class="slot">&nbsp;</div>
+                @if (!($movedPiece))
+                    @foreach($board[$y][$x] as $piece)
+                        @if (count($movesByPieceId[$piece->id]) == 0)
+                            <div class="slot">{{ $piece->getSymbol() }}</div>
+                        @else
+                            <a href="{{ route('paulichess.games.show', [$game->id, 'moved_piece_id' => $piece->id]) }}">
+                                <div class="slot">{{ $piece->getSymbol() }}</div>
+                            </a>
+                        @endif
+                    @endforeach
+                @elseif($toX && $toY)
+                    @foreach($board[$y][$x] as $piece)
+                        @if ($piece->id == $movedPiece->id)
+                            <div class="slot bg-danger">&nbsp;</div>
+                        @else
+                            <div class="slot">{{ $piece->getSymbol() }}</div>
+                        @endif
+                    @endforeach
+                @elseif($capturedPiece)
+                    @foreach($board[$y][$x] as $piece)
+                        @if ($piece->id == $movedPiece->id)
+                            <div class="slot bg-danger">&nbsp;</div>
+                        @elseif ($piece->id == $capturedPiece->id)
+                            <div class="slot bg-success">{{ $movedPiece->getSymbol() }}</div>
+                        @else
+                            <div class="slot">{{ $piece->getSymbol() }}</div>
+                        @endif
+                    @endforeach
+                @else
+                    @foreach($board[$y][$x] as $piece)
+                        @if ($piece->id == $movedPiece->id)
+                            <div class="slot bg-secondary">{{ $piece->getSymbol() }}</div>
+                        @elseif ($movedPiece->canCapture($piece))
+                            <a href="{{ route('paulichess.games.show', [$game->id, 'moved_piece_id' => $movedPiece->id, 'captured_piece_id' => $piece->id]) }}">
+                                <div class="slot bg-warning">{{ $piece->getSymbol() }}</div>
+                            </a>
+                        @else
+                            <div class="slot">{{ $piece->getSymbol() }}</div>
+                        @endif
+                    @endforeach
                 @endif
+
                 @if (count($board[$y][$x]) < 2)
-                <div class="slot">&nbsp;</div>
+                    @if (!$movedPiece)
+                    <div class="slot">&nbsp;</div>
+                    @elseif ($capturedPiece)
+                        <div class="slot">&nbsp;</div>
+                    @elseif ($toX && $toY)
+                        @if ($toX == $x && $toY == $y)
+                            <div class="slot bg-success">{{ $movedPiece->getSymbol() }}</div>
+                        @else
+                            <div class="slot">&nbsp;</div>
+                        @endif
+                    @else
+                        @if($movedPiece->canMoveToWithoutCapture($x, $y))
+                            <a href="{{ route('paulichess.games.show', [$game->id, 'moved_piece_id' => $movedPiece->id, 'to_x' => $x, 'to_y' => $y]) }}">
+                                <div class="slot bg-primary">&nbsp;</div>
+                            </a>
+                        @else
+                            <div class="slot">&nbsp;</div>
+                        @endif
+                    @endif
+                @endif
+
+                @if (count($board[$y][$x]) < 1)
+                    <div class="slot">&nbsp;</div>
                 @endif
             </td>
             @endforeach
@@ -75,7 +133,15 @@ It is {{ $game->turn }}'s turn.
             <div>
                 @foreach($legalMoves as $move)
                 <div>
-                    <input type="radio" id="move-{{$move->getSearchKey()}}" name="move" value="{{$move->getSearchKey()}}" />
+                    <input 
+                        type="radio"
+                        id="move-{{$move->getSearchKey()}}"
+                        name="move"
+                        value="{{$move->getSearchKey()}}"
+                        @if (count($legalMoves) == 1)
+                        checked="checked"
+                        @endif
+                        />
                     <label for="move-{{$move->getSearchKey()}}">
                         <span>Move</span>
                         <b>{{ $move->movedPiece->type }}</b>

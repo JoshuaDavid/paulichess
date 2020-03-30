@@ -231,14 +231,15 @@ class PauliChessGamePiece extends Model
                 break;
             }
 
+            foreach($this->game->getOpposingPieces($x, $y, $this->color) as $capture) {
+                $moves[] = $this->constructMove($capture->x, $capture->y, $capture, null);
+            }
+
             if (!$this->game->hasEmptySlot($x, $y)) {
                 break;
             }
 
             $moves[] = $this->constructMove($x, $y, null, null);
-            foreach($this->game->getOpposingPieces($x, $y, $this->color) as $capture) {
-                $moves[] = $this->constructMove($capture->x, $capture->y, $capture, null);
-            }
             
             if (!$this->game->isEmptySquare($x, $y)) {
                 break;
@@ -246,6 +247,24 @@ class PauliChessGamePiece extends Model
         }
 
         return $moves;
+    }
+
+    public function syncWithPlayerAndGame() {
+        $this->game->setRelation('pieces', $this->game->pieces->map(function($piece) {
+            if ($piece->id == $this->id) {
+                return $this;
+            } else {
+                return $piece;
+            }
+        }));
+
+        $this->player->setRelation('pieces', $this->player->pieces->map(function($piece) {
+            if ($piece->id == $this->id) {
+                return $this;
+            } else {
+                return $piece;
+            }
+        }));
     }
 
     public function getLegalRookMoves() {
@@ -326,5 +345,25 @@ class PauliChessGamePiece extends Model
             return $this->getLegalKnightMoves();
         }
         return [];
+    }
+
+    public function canMoveToWithoutCapture($x, $y) {
+        $moves = $this->getLegalMoves();
+        foreach ($moves as $move) {
+            if ($move->to_x == $x and $move->to_y == $y && !$move->capturedPiece) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function canCapture($capturedPiece) {
+        $moves = $this->getLegalMoves();
+        foreach ($moves as $move) {
+            if ($move->capturedPiece && $move->capturedPiece->id == $capturedPiece->id) {
+                return true;
+            }
+        }
+        return false;
     }
 }

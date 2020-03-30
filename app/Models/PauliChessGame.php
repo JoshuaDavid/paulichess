@@ -34,6 +34,55 @@ class PauliChessGame extends Model
         }
     }
 
+    public function loadCorrectly() {
+        $this->load([
+            'players',
+            'pieces',
+            'moves',
+        ]);
+
+        $playersById = $this->players->keyBy('id');
+        $piecesById = $this->pieces->keyBy('id');
+        $movesById = $this->moves->keyBy('id');
+
+        foreach ($this->players as $player) {
+            $player->setRelation('game', $this);
+            $player->setRelation('pieces', collect([]));
+            $player->setRelation('moves', collect([]));
+        }
+
+        foreach ($this->pieces as $piece) {
+            $piece->setRelation('game', $this);
+            $playerId = $piece->getAttribute($piece->player()->getForeignKeyName());
+            $player = $playersById[$playerId];
+            $piece->setRelation('player',  $player);
+            $player->pieces->push($piece);
+            $piece->setRelation('moves', collect([]));
+        }
+
+        foreach ($this->moves as $move) {
+            $move->setRelation('game', $this);
+
+            $playerId = $move->getAttribute($move->player()->getForeignKeyName());
+            $player = $playersById[$playerId];
+            $move->setRelation('player', $player);
+            $player->moves->push($move);
+
+            $movedPieceId = $move->getAttribute($move->movedPiece()->getForeignKeyName());
+            $movedPiece = $piecesById[$movedPieceId];
+            $move->setRelation('movedPiece', $movedPiece);
+            $piece->moves->push($move);
+
+            $capturedPieceId = $move->getAttribute($move->capturedPiece()->getForeignKeyName());
+            if ($capturedPieceId) {
+                $capturedPiece = $piecesById[$capturedPieceId];
+                $move->setRelation('capturedPiece', $capturedPiece);
+            }
+        }
+
+        return $this;
+    }
+
     public function init($randomize = false) {
         if ($randomize) {
             if (rand(0, 1) == 0) {
@@ -106,6 +155,10 @@ class PauliChessGame extends Model
     }
 
     public function isTurnOfUser($user) {
+        if ($this->winner) {
+            return false;
+        }
+
         // Get fancy cause a player can play against themselves
         foreach ($this->players as $player) {
             if ($player->user && $player->user->id == $user->id && $player->color == $this->turn) {
@@ -154,36 +207,127 @@ class PauliChessGame extends Model
         });
     }
 
-    public function switchPlayers() {
+    public function getOpposingPlayer(PauliChessGamePlayer $player) {
+        foreach ($this->players as $opponent) {
+            if ($opponent->color != $player->color) {
+                return $opponent;
+            }
+        }
+        throw new Exception("A player should always have an opponent in an active game");
+    }
+
+    public function switchPlayers($save = true) {
         if ($this->turn == 'white') {
             $this->turn = 'black';
         } else {
             $this->turn = 'white';
         }
-        $this->save();
+
+        if ($save) {
+            $this->save();
+        }
     }
 
-    public function executeMove(PauliChessGameMove $move) {
+    public function executeMove(PauliChessGameMove $move, $save = true) {
         $piece = $move->movedPiece;
         $piece->x = $move->to_x;
         $piece->y = $move->to_y;
         if ($move->promotion_type) {
             $piece->type = $move->promotion_type;
         }
-        $piece->save();
+        if ($save) {
+            $piece->save();
+        }
 
         if ($move->capturedPiece) {
             $move->capturedPiece->is_captured = true;
-            $move->capturedPiece->save();
-
-            if ($move->capturedPiece->type == PauliChessGamePiece::TYPE_KING) {
-                $this->winner = $move->player->color;
-                $this->save();
+            if ($save) {
+                $move->capturedPiece->save();
             }
         }
 
-        $move->save();
+        $this->moves->push($move);
+        if ($save) {
+            $move->save();
+        }
 
-        $this->switchPlayers();
+        $this->switchPlayers($save);
+    }
+
+    public function undoLastMove($save = true) {
+        $move = $this->moves->pop();
+
+        $piece = $move->movedPiece;
+        $piece->x = $move->from_x;
+        $piece->y = $move->from_y;
+        if ($move->promotion_type) {
+            $piece->type = PauliChessGamePiece::TYPE_PAWN;
+        }
+        if ($save) {
+            $piece->save();
+        }
+
+        if ($move->capturedPiece) {
+            $move->capturedPiece->is_captured = false;
+            if ($save) {
+                $move->capturedPiece->save();
+            }
+        }
+
+        $this->switchPlayers($save);
+
+        if ($save) {
+            $move->delete();
+        }
+    }
+
+    public function declareWinner($player) {
+        $this->winner = $player->color;
+        $this->save();
+    }
+
+    public function wouldBeInCheckAfterMove(PauliChessGameMove $move) {
+        $wouldBeInCheckAfterMove = false;
+        $this->executeMove($move, false);
+        if ($this->isInCheck($move->player)) {
+            $wouldBeInCheckAfterMove = true;
+        }
+        $this->undoLastMove(false);
+        return $wouldBeInCheckAfterMove;
+    }
+
+    public function isInCheck(PauliChessGamePlayer $player) {
+        $opponent = $this->getOpposingPlayer($player);
+        foreach ($opponent->getLegalMoves() as $move) {
+            if ($move->capturedPiece && $move->capturedPiece->type === PauliChessGamePiece::TYPE_KING) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isInCheckmate(PauliChessGamePlayer $player) {
+        if (!$this->isInCheck($player)) {
+            return false;
+        }
+
+        foreach ($player->getLegalMoves() as $move) {
+            $this->executeMove($move, false);
+            $wouldBeInCheck = $this->isInCheck($player);
+            $this->undoLastMove(false);
+
+            if (!$wouldBeInCheck) {
+                /*
+                echo json_encode(array_merge(
+                    $move->getAttributes(),
+                    $move->movedPiece->getAttributes()
+                )) . "\n";
+                 */
+                return false;
+            }
+        }
+
+        return true;
     }
 }

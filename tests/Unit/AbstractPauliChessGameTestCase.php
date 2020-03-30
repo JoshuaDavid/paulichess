@@ -63,6 +63,7 @@ class AbstractPauliChessGameTestCase extends TestCase {
         $piece->setRelation('player', $player);
         $piece->setRelation('moves', collect([]));
         $piece->type = $type;
+        $piece->color = $piece->player->color;
         $piece->x = $x;
         $piece->y = $y;
 
@@ -127,6 +128,13 @@ class AbstractPauliChessGameTestCase extends TestCase {
             return $move->to_x == $x
                 && $move->to_y == $y
                 && $move->capturedPiece == null;
-        })) > 0, $message ?: "Expected {$piece->type} to be able to move to {$x} {$y} but it cannot");
+        })) > 0, $message ?: "Expected {$piece->color} {$piece->type} to be able to move to {$x} {$y} but it cannot");
+    }
+
+    public function assertCanCapture($piece, $capture, $message = null) {
+        $this->assertTrue(count($this->getMatchingMoves($piece, function($move) use ($capture) {
+            return $move->capturedPiece
+                && $move->capturedPiece->id == $capture->id;
+        })) > 0, $message ?: "Expected {$piece->color} {$piece->type} to be able to capture {$capture->color} {$capture->type} but it cannot");
     }
 }
